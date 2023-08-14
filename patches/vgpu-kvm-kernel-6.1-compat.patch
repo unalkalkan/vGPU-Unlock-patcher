@@ -43,6 +43,15 @@ index 8fecad0..de9fbe2 100644
  
  #if defined(NV_VGPU_KVM_BUILD)
  static void vgpu_msix_disable(vgpu_dev_t *vgpu_dev);
+@@ -401,7 +401,7 @@ void nv_vgpu_vfio_dma_unmap_callback(struct vgpu_dev_s *vgpu_dev, u64 iova, u64
+             if (vgpu_dev->mapping_cache && vgpu_dev->mapping_cache[gpfn])
+             {
+ #if defined(NV_VFIO_PIN_PAGES_HAS_VFIO_DEVICE_ARG)
+-                vfio_unpin_pages(vgpu_dev->vdev, gpfn << PAGE_SHIFT, 1);
++                vfio_unpin_pages(&vgpu_dev->vdev, gpfn << PAGE_SHIFT, 1);
+                 ret = 1;
+ #else
+                 ret = vfio_unpin_pages(vgpu_dev->dev,
 @@ -435,6 +436,16 @@ NV_STATUS nv_get_vgpu_type_id(struct kobject *kobj, struct device *dev,
                                       NvU32 *vgpu_type_id, void *mtype)
  {
@@ -193,6 +202,42 @@ index 8fecad0..de9fbe2 100644
  
  static NvBool nv_wait_for_vgpu_task_exit(vgpu_dev_t *vgpu_dev)
  {
+@@ -2349,7 +2349,7 @@ static void nv_vgpu_clear_mapping_cache(vgpu_dev_t *vgpu_dev)
+                 for (k = j + 1; k < pfn_count; k++)
+                     if (gpfn_buffer[k - 1] + 1 != gpfn_buffer[k])
+                         break;
+-                vfio_unpin_pages(vgpu_dev->vdev, gpfn_buffer[j] << PAGE_SHIFT, k - j);
++                vfio_unpin_pages(&vgpu_dev->vdev, gpfn_buffer[j] << PAGE_SHIFT, k - j);
+                 j = k;
+             }
+             ret = pfn_count;
+@@ -3260,7 +3260,7 @@ NV_STATUS nv_vgpu_unpin_pages(NvU64 *buffer, NvU32 pfn_count,
+                 for (k = j + 1; k < count; k++)
+                     if (gpfn_buffer[k - 1] + 1 != gpfn_buffer[k])
+                         break;
+-                vfio_unpin_pages(vgpu_dev->vdev, gpfn_buffer[j] << PAGE_SHIFT, k - j);
++                vfio_unpin_pages(&vgpu_dev->vdev, gpfn_buffer[j] << PAGE_SHIFT, k - j);
+                 j = k;
+             }
+             ret = count;
+@@ -3419,7 +3419,7 @@ NV_STATUS nv_vgpu_translate_gfn_to_pfn(NvU64 *gpfn_buffer, NvU64 *hpfn_buffer,
+                 for (k = j + 1; k < cnt; k++)
+                     if (tgpfn_buffer[pinned_count + k - 1] + 1 != tgpfn_buffer[pinned_count + k])
+                         break;
+-                vfio_pin_pages(vgpu_dev->vdev, tgpfn_buffer[pinned_count + j] << PAGE_SHIFT,
++                vfio_pin_pages(&vgpu_dev->vdev, tgpfn_buffer[pinned_count + j] << PAGE_SHIFT,
+                                k - j, IOMMU_READ | IOMMU_WRITE, pa_page + j);
+                 j = k;
+             }
+@@ -3517,7 +3517,7 @@ pin_err:
+                 for (k = j + 1; k < cnt; k++)
+                     if (tgpfn_buffer[k - 1] + 1 != tgpfn_buffer[k])
+                         break;
+-                vfio_unpin_pages(vgpu_dev->vdev, tgpfn_buffer[j] << PAGE_SHIFT, k - j);
++                vfio_unpin_pages(&vgpu_dev->vdev, tgpfn_buffer[j] << PAGE_SHIFT, k - j);
+                 j = k;
+             }
+             ret = cnt;
 @@ -4788,27 +4749,29 @@ flr_done:
  
  #endif /* NV_VGPU_KVM_BUILD */
