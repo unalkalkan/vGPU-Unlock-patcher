@@ -51,7 +51,7 @@ DO_MRGD=false
 DO_WSYS=false
 DO_UNLK=true
 DO_LIBS=true
-DO_LNX6=true
+DO_LK6P=false
 
 while [ $# -gt 0 -a "${1:0:2}" = "--" ]
 do
@@ -72,9 +72,9 @@ do
             shift
             OPTVGPU=false
             ;;
-        --no-kernel-6)
+        --lk6-patches)
             shift
-            DO_LNX6=false
+            DO_LK6P=true
             ;;
         --no-libs-patch)
             shift
@@ -412,7 +412,10 @@ $DO_LIBS && {
 }
 
 if $DO_VGPU; then
-    $DO_LNX6 && applypatch ${TARGET} vgpu-kvm-kernel-6.0-compat.patch
+    if $DO_LK6P; then
+        applypatch ${TARGET} vgpu-kvm-kernel-6.0-compat.patch
+        applypatch ${TARGET} vgpu-kvm-kernel-6.1-compat.patch
+    fi
     applypatch ${TARGET} vcfg-testing.patch
     vcfgclone ${TARGET}/vgpuConfig.xml 0x1E30 0x12BA 0x1E84 0x0000	# RTX 2070 super 8GB
     vcfgclone ${TARGET}/vgpuConfig.xml 0x1E30 0x12BA 0x1E81 0x0000	# RTX 2080 super 8GB
